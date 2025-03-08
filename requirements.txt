@@ -1,0 +1,12 @@
+Django==5.0.1
+psycopg2-binary==2.9.9  # PostgreSQL adapter for Supabase
+PyMuPDF==1.23.7  # For PDF processing
+python-docx==1.0.1  # For DOCX processing
+whitenoise==6.6.0  # Static file serving
+gunicorn==21.2.0  # WSGI server
+python-dotenv==1.0.0  # Environment variable management
+dj-database-url==2.1.0  # Database URL parsing
+ollama==0.1.5  # For interacting with local LLMs
+requests==2.31.0  # HTTP requests library
+sentry-sdk==1.39.1  # Error monitoring (optional)
+django-cors-headers==4.3.1  # For API access if needed 

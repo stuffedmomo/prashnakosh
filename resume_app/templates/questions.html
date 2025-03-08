@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Prashnakosh Results | Prashnakosh{% endblock %}
+{% block meta_description %}View your personalized interview questions generated from your resume. Prepare for interviews with tailored questions relevant to your skills and experience.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom tooltip styles */
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+    }
+    
+    .tooltip .tooltip-text {
+        visibility: hidden;
+        width: 240px;
+        background-color: rgba(39, 57, 28, 0.95);
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        font-size: 0.875rem;
+    }
+    
+    .tooltip .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: rgba(39, 57, 28, 0.95) transparent transparent transparent;
+    }
+    
+    .tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    /* Card hover effect */
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(39, 57, 28, 0.1), 0 10px 10px -5px rgba(39, 57, 28, 0.04);
+    }
+    
+    /* Question card animation */
+    .question-card {
+        transition: all 0.3s ease;
+        transform: translateY(0px);
+        border-left-width: 4px;
+    }
+    
+    .question-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px -2px rgba(39, 57, 28, 0.2);
+        border-left-width: 8px;
+    }
+    
+    /* Word tag styling */
+    .word-tag {
+        transition: all 0.2s ease;
+    }
+    
+    .word-tag:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Collapsible section */
+    .collapsible-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+    
+    .collapsible-content.open {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    /* Print styles */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .print-only-section {
+            display: block !important;
+            page-break-inside: avoid;
+        }
+        
+        .container {
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        .question-card {
+            break-inside: avoid;
+            border: 1px solid #ddd !important;
+            margin-bottom: 0.5cm !important;
+            page-break-inside: avoid;
+        }
+        
+        body {
+            font-size: 12pt;
+            color: black;
+        }
+        
+        h1, h2, h3 {
+            color: black !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header with Title and Print Button -->
+    <header class="text-center mb-8 print-only-section">
+        <h1 class="text-3xl font-bold text-forest-darkest mb-2">Prashnakosh Results</h1>
+        <p class="text-gray-600">Personalized questions based on your resume</p>
+    </header>
+    
+    <!-- Information Banner -->
+    <div class="bg-forest-darkest/10 border-l-4 border-forest-medium p-4 rounded-md mb-8 no-print">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-forest-medium" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-forest-dark">
+                    <strong>How to use these questions:</strong> Review each question to prepare for your interview. 
+                    Use the print button to save or print your questions. Click on a question to highlight it.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Card -->
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6 space-y-8 hover-card">
+        <!-- Action Buttons -->
+        <div class="flex justify-between items-center mb-6 no-print">
+            <h2 class="text-2xl font-semibold text-forest-dark">Interview Questions</h2>
+            <div class="flex space-x-3">
+                <button id="print-button" class="flex items-center px-3 py-2 bg-forest-medium text-white rounded hover:bg-forest-dark transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Print Questions
+                </button>
+                <a href="{% url 'upload_resume' %}" class="flex items-center px-3 py-2 border border-forest-medium text-forest-medium rounded hover:bg-forest-medium hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Upload Another Resume
+                </a>
+            </div>
+        </div>
+        
+        <!-- Questions Section -->
+        <div class="space-y-4 print-only-section">
+            <div class="flex justify-between items-center mb-2 no-print">
+                <h3 class="text-xl font-semibold text-forest-dark">Questions to Ask</h3>
+                <div class="tooltip">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-forest-medium" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="tooltip-text">Click on a question to highlight it. These questions are generated based on the skills and experience found in your resume.</span>
+                </div>
+            </div>
+            
+            {% for question in interview_questions %}
+            <div class="question-card p-4 bg-gray-50 rounded-lg border-l-4 border-forest-medium hover:bg-gray-100 transition-colors">
+                <p class="text-gray-800">{{ question }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Word Frequency Section -->
+        <div class="mt-8 no-print">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-forest-dark">Key Terms in Your Resume</h3>
+                <div class="tooltip">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-forest-medium" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="tooltip-text">These are the most frequent terms found in your resume. Consider highlighting these skills during your interview.</span>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                {% for word, count in word_frequency %}
+                <span class="word-tag inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-forest-light/10 text-forest-dark border border-forest-light/30">
+                    {{ word }} 
+                    <span class="ml-2 bg-forest-light/20 px-2 py-0.5 rounded-full text-forest-darkest">{{ count }}</span>
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Collapsible Resume Text -->
+        <div class="mt-8 no-print">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-xl font-semibold text-forest-dark">Extracted Resume Text</h3>
+                <button id="toggle-resume" class="flex items-center text-sm font-medium text-forest-medium hover:text-forest-dark">
+                    <span id="toggle-text">Show Text</span>
+                    <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1 transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+            </div>
+            <div id="resume-content" class="collapsible-content p-4 bg-gray-50 rounded-lg text-gray-700">
+                {{ resume_text|linebreaks }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+    // Toggle resume text visibility
+    document.getElementById('toggle-resume').addEventListener('click', function() {
+        const content = document.getElementById('resume-content');
+        const toggleText = document.getElementById('toggle-text');
+        const toggleIcon = document.getElementById('toggle-icon');
+        
+        content.classList.toggle('open');
+        
+        if (content.classList.contains('open')) {
+            toggleText.textContent = 'Hide Text';
+            toggleIcon.classList.add('rotate-180');
+        } else {
+            toggleText.textContent = 'Show Text';
+            toggleIcon.classList.remove('rotate-180');
+        }
+    });
+    
+    // Highlight selected question
+    document.querySelectorAll('.question-card').forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove highlight from all cards
+            document.querySelectorAll('.question-card').forEach(c => {
+                c.classList.remove('bg-forest-light/20');
+                c.classList.add('bg-gray-50');
+            });
+            
+            // Add highlight to clicked card
+            this.classList.remove('bg-gray-50');
+            this.classList.add('bg-forest-light/20');
+        });
+    });
+    
+    // Print functionality
+    document.getElementById('print-button').addEventListener('click', function() {
+        window.print();
+    });
+</script>
+{% endblock %}

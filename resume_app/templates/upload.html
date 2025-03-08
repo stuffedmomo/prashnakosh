@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Your Resume | Prashnakosh{% endblock %}
+{% block meta_description %}Upload your resume to generate customized interview questions using AI. Prepare for your next interview with Prashnakosh.{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom tooltip styles */
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+    }
+    
+    .tooltip .tooltip-text {
+        visibility: hidden;
+        width: 240px;
+        background-color: rgba(39, 57, 28, 0.95);
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s, visibility 0.3s;
+        font-size: 0.875rem;
+    }
+    
+    .tooltip .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: rgba(39, 57, 28, 0.95) transparent transparent transparent;
+    }
+    
+    .tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(24, 35, 15, 0.95);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    
+    .loader {
+        border: 5px solid rgba(31, 125, 83, 0.3);
+        border-radius: 50%;
+        border-top: 5px solid #1F7D53;
+        width: 60px;
+        height: 60px;
+        animation: spin 2s linear infinite;
+        margin-bottom: 1.5rem;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* File input styling */
+    input[type="file"] {
+        opacity: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+    
+    .file-input-label {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .file-input-label:hover {
+        background-color: rgba(31, 125, 83, 0.1);
+    }
+    
+    /* Card hover effect */
+    .hover-card {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(39, 57, 28, 0.1), 0 10px 10px -5px rgba(39, 57, 28, 0.04);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay with Enhanced Information -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+    <div class="loading-text text-center">
+        <p class="text-white text-xl font-medium mb-2">Processing your resume...</p>
+        <p id="loadingStatus" class="text-white/80 text-lg mb-4">Extracting text and generating questions...</p>
+        <div class="progress-indicator flex space-x-2 justify-center mt-2">
+            <span class="h-2 w-2 bg-forest-light rounded-full animate-pulse"></span>
+            <span class="h-2 w-2 bg-forest-light rounded-full animate-pulse-slow"></span>
+            <span class="h-2 w-2 bg-forest-light rounded-full animate-pulse delay-300"></span>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-12">
+    <!-- Main Header -->
+    <header class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-forest-darkest mb-2">Prashnakosh</h1>
+        <p class="text-lg text-gray-600">Upload your resume to generate tailored interview questions</p>
+    </header>
+    
+    <!-- Upload Card -->
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8 hover-card">
+        <!-- Section Header -->
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-semibold text-forest-dark">Upload Resume</h2>
+            
+            <div class="tooltip">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-forest-medium" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="tooltip-text">Upload your resume in PDF, DOC, or DOCX format. We'll analyze it to generate relevant interview questions.</span>
+            </div>
+        </div>
+        
+        <!-- Upload Form -->
+        <form method="post" enctype="multipart/form-data" id="uploadForm" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if error %}
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">{{ error }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Choose a resume file
+                </label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-forest-medium transition-colors bg-gray-50 group">
+                    <div class="space-y-3 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 group-hover:text-forest-medium transition-colors" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <div class="flex justify-center text-sm">
+                            <label for="{{ form.resume.id_for_label }}" class="file-input-label relative cursor-pointer bg-white rounded-md font-medium text-forest-medium hover:text-forest-light focus-within:outline-none px-4 py-2 border border-forest-medium hover:border-forest-light transition-colors">
+                                <span>Select a file</span>
+                                {{ form.resume }}
+                            </label>
+                        </div>
+                        <div id="file-name" class="text-sm text-gray-600 mt-2 min-h-[20px]">No file selected</div>
+                        <p class="text-xs text-gray-500">PDF, DOC, or DOCX up to 10MB</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 pt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-forest-medium" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 text-sm text-gray-600">
+                        <p>Processing may take 30-40 seconds depending on resume size and complexity.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-forest-medium hover:bg-forest-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-forest-medium transition-colors">
+                Generate Interview Questions
+            </button>
+        </form>
+    </div>
+    
+    <!-- Features Section -->
+    <div class="max-w-4xl mx-auto mt-16">
+        <h2 class="text-2xl font-bold text-forest-darkest text-center mb-8">How Prashnakosh Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow-md hover-card">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-forest-medium text-white mb-4 mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-forest-dark text-center mb-2">1. Upload Resume</h3>
+                <p class="text-gray-600 text-center">Upload your resume in PDF, DOC, or DOCX format. Our system securely processes your document.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md hover-card">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-forest-medium text-white mb-4 mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-forest-dark text-center mb-2">2. AI Analysis</h3>
+                <p class="text-gray-600 text-center">Our AI analyzes your resume to identify key skills, experience, and qualifications.</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md hover-card">
+                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-forest-medium text-white mb-4 mx-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-forest-dark text-center mb-2">3. Question Generation</h3>
+                <p class="text-gray-600 text-center">We generate tailored interview questions that help you prepare for your next interview.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+    // Show selected filename
+    document.querySelector('input[type="file"]').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+        document.getElementById('file-name').textContent = fileName;
+    });
+    
+    // Form submission and loading overlay
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const fileInput = document.querySelector('input[type="file"]');
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+            return;
+        }
+
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        const loadingMessages = [
+            "Analyzing your resume...",
+            "Extracting key information...",
+            "Identifying skills and experience...",
+            "Generating tailored questions...",
+            "Almost there...",
+            "Finalizing your results..."
+        ];
+
+        let messageIndex = 0;
+        const statusElement = document.getElementById('loadingStatus');
+        
+        const messageInterval = setInterval(() => {
+            if (messageIndex < loadingMessages.length) {
+                statusElement.textContent = loadingMessages[messageIndex];
+                messageIndex++;
+            } else {
+                clearInterval(messageInterval);
+            }
+        }, 4000);
+    });
+</script>
+{% endblock %}

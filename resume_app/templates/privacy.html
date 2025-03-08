@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Privacy Policy | Prashnakosh{% endblock %}
+{% block meta_description %}Learn how Prashnakosh handles your data and protects your privacy.{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-forest-darkest mb-6">Privacy Policy</h1>
+        
+        <div class="prose max-w-none text-gray-700">
+            <p class="mb-4">Last updated: {% now "F j, Y" %}</p>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">Introduction</h2>
+            <p>
+                Prashnakosh ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and services.
+            </p>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">Information We Collect</h2>
+            <p>
+                We may collect the following types of information:
+            </p>
+            <ul class="list-disc pl-6 mb-4 space-y-2">
+                <li><strong>Resume Content:</strong> When you upload your resume for processing, our system temporarily processes the content to generate interview questions.</li>
+                <li><strong>Usage Data:</strong> Information about how you use our service, including the features you use and the time spent on our site.</li>
+                <li><strong>Device Information:</strong> Information about the device you use to access our service, including device type, operating system, and browser type.</li>
+            </ul>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">How We Use Your Information</h2>
+            <p>
+                We use the information we collect to:
+            </p>
+            <ul class="list-disc pl-6 mb-4 space-y-2">
+                <li>Generate customized interview questions based on your resume</li>
+                <li>Improve our services and develop new features</li>
+                <li>Analyze usage patterns to enhance user experience</li>
+                <li>Ensure the technical functionality and security of our service</li>
+            </ul>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">Data Retention</h2>
+            <p>
+                <strong>Resume Data:</strong> Your resume is temporarily processed to generate interview questions and is not permanently stored. All resume data is deleted after processing is complete, typically within minutes of generation.
+            </p>
+            <p>
+                <strong>Usage Data:</strong> We may retain anonymized usage data for analytical purposes for up to 12 months.
+            </p>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">Data Security</h2>
+            <p>
+                We implement appropriate technical and organizational measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction. However, please be aware that no method of transmission over the internet or electronic storage is 100% secure.
+            </p>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">Analytics</h2>
+            <p>
+                We use Google Analytics to help us understand how users engage with our website. Google Analytics uses cookies and similar technologies to collect and analyze information about website use. You can learn more about how Google uses data when you use our site by visiting <a href="https://policies.google.com/technologies/partner-sites" class="text-forest-medium hover:underline" target="_blank" rel="noopener noreferrer">Google's Privacy & Terms page</a>.
+            </p>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">Changes to This Privacy Policy</h2>
+            <p>
+                We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date.
+            </p>
+            
+            <h2 class="text-xl font-semibold text-forest-dark mt-6 mb-3">Contact Us</h2>
+            <p>
+                If you have any questions about this Privacy Policy, please contact us at <a href="mailto:{{ SUPPORT_EMAIL }}" class="text-forest-medium hover:underline">{{ SUPPORT_EMAIL }}</a>.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

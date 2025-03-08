@@ -1,0 +1,1 @@
+web: gunicorn prashnakosh.wsgi_production:application --log-file - 
