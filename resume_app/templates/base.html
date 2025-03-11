@@ -38,18 +38,16 @@
     {% block extra_css %}{% endblock %}
     
     <!-- Google Analytics -->
-    {% if GOOGLE_ANALYTICS_ID %}
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS_ID }}"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '{{ GOOGLE_ANALYTICS_ID }}');
-    </script>
-    {% endif %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2CT2FG609M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-2CT2FG609M');
+</script>  
     
-    {% block head_scripts %}{% endblock %}
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
     <!-- Header -->

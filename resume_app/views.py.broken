@@ -15,6 +15,9 @@ from django.conf import settings
 import logging
 import time
 import traceback
+# Add timeout import
+import requests
+from requests.exceptions import Timeout
 
 # Setup specialized loggers
 logger = logging.getLogger('resume_app')
@@ -150,62 +153,86 @@ class ResumeAnalyzer:
         logger.debug(f"Found {len(result)} most common words")
         return result
 
-    def generate_interview_questions(self, resume_text: str, num_questions: int = 10) -> list:
-        """Generate interview questions using Ollama with LLaMA model."""
-        logger.info(f"Generating {num_questions} interview questions using model: {self.model_name}")
-        start_time = time.time()
+def generate_interview_questions(self, resume_text: str, num_questions: int = 10) -> list:
+    """Generate interview questions using Ollama with LLaMA model."""
+    logger.info(f"Generating {num_questions} interview questions using model: {self.model_name}")
+    start_time = time.time()
+    
+    # Further reduce text size to prevent timeouts
+    resume_text_truncated = resume_text[:1000]  # Reduced from 1500 to 1000 characters
+    logger.info(f"Truncated resume to {len(resume_text_truncated)} characters for LLM processing")
+    
+    prompt = (
+        "You are a highly skilled IT professional. Your task is to create specific and insightful interview questions based on the candidate's resume, "
+        "These questions should effectively assess their experience and technical skills.\n\n"
+        f"Below is an excerpt from the candidate's resume:\n{resume_text_truncated}...\n\n"
+        f"Please generate {num_questions} concise and well-structured interview questions:"
+    )
+
+    logger.debug(f"Sending prompt to LLM, length: {len(prompt)} chars")
+    
+    try:
+        # Set a timeout for Ollama API call
+        logger.info("Starting Ollama API call with 25 second timeout")
         
-        # Truncate resume text to prevent timeouts
-        resume_text_truncated = resume_text[:1000]
-        logger.info(f"Truncated resume to {len(resume_text_truncated)} characters for LLM processing")
-        
-        prompt = (
-            "You are a highly skilled IT professional. Your task is to create specific and insightful interview questions based on the candidate's resume, "
-            "These questions should effectively assess their experience and technical skills.\n\n"
-            f"Below is an excerpt from the candidate's resume:\n{resume_text_truncated}...\n\n"
-            f"Please generate {num_questions} concise and well-structured interview questions:"
+        # Use the original chat method which should be compatible
+        response = ollama.chat(
+            model=self.model_name,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
         )
-
-        logger.debug(f"Sending prompt to LLM, length: {len(prompt)} chars")
         
-        try:
-            response = ollama.chat(model=self.model_name, messages=[{"role": "user", "content": prompt}])
+        if isinstance(response, dict) and 'message' in response and 'content' in response['message']:
             generated_text = response['message']['content']
-            
-            # Log LLM response time
-            llm_time = time.time() - start_time
-            performance_logger.info(f"LLM response received in {llm_time:.2f}s")
-            
-            logger.debug(f"Processing LLM response, length: {len(generated_text)} chars")
-            
-            # Extract questions from the generated text
-            questions = []
-            for line in generated_text.split('\n'):
-                line = line.strip()
-                if ('?' in line) or any(f"{i}." in line for i in range(1, num_questions + 1)):
-                    questions.append(line.strip())
+        else:
+            # Handle different response format
+            logger.warning(f"Unexpected response format from Ollama: {type(response)}")
+            generated_text = str(response)
+        
+        # Log LLM response time
+        llm_time = time.time() - start_time
+        performance_logger.info(f"LLM response received in {llm_time:.2f}s")
+        
+        logger.debug(f"Processing LLM response, length: {len(generated_text)} chars")
+        
+        # Extract questions from the generated text
+        questions = []
+        for line in generated_text.split('\n'):
+            line = line.strip()
+            if ('?' in line) or any(f"{i}." in line for i in range(1, num_questions + 1)):
+                questions.append(line.strip())
 
-            # Clean up and ensure proper formatting
-            questions = [q.split('.', 1)[-1].strip() if '.' in q else q for q in questions]
-            questions = [q if q.endswith('?') else f"{q}?" for q in questions]
+        # Clean up and ensure proper formatting
+        questions = [q.split('.', 1)[-1].strip() if '.' in q else q for q in questions]
+        questions = [q if q.endswith('?') else f"{q}?" for q in questions]
 
-            # Ensure we have exactly num_questions
-            while len(questions) < num_questions:
-                questions.append(f"Question {len(questions) + 1}?")
-                
-            formatted_questions = [f"{i+1}. {q}" for i, q in enumerate(questions[:num_questions])]
+        # Ensure we have exactly num_questions
+        while len(questions) < num_questions:
+            questions.append(f"Question {len(questions) + 1}?")
             
-            # Log full processing time
-            total_time = time.time() - start_time
-            performance_logger.info(f"Question generation completed in {total_time:.2f}s")
-            logger.info(f"Successfully generated {len(formatted_questions)} questions")
-            
-            return formatted_questions
+        formatted_questions = [f"{i+1}. {q}" for i, q in enumerate(questions[:num_questions])]
+        
+        # Log full processing time
+        total_time = time.time() - start_time
+        performance_logger.info(f"Question generation completed in {total_time:.2f}s")
+        logger.info(f"Successfully generated {len(formatted_questions)} questions")
+        
+        return formatted_questions
 
-        except Exception as e:
-            logger.error(f"Error in question generation: {str(e)}\n{traceback.format_exc()}")
-            performance_logger.warning(f"Question generation failed after {time.time() - start_time:.2f}s")
-            return [f"{i+1}. Default question {i+1}?" for i in range(num_questions)]
+    except Exception as e:
+        # Log the error and return fallback questions
+        logger.error(f"Error in question generation: {str(e)}\n{traceback.format_exc()}")
+        performance_logger.warning(f"Question generation failed after {time.time() - start_time:.2f}s")
+        
+        # Return fallback questions
+        return [
+            f"{i+1}. What experience do you have with {skill}?" 
+            for i, skill in enumerate(["project management", "teamwork", "problem-solving", 
+                                      "communication", "technical skills", "leadership", 
+                                      "adaptability", "time management", "critical thinking", 
+                                      "innovation"][:num_questions])
+        ]
 
 # Django View for Handling Resume Upload
 def upload_resume(request):
@@ -311,15 +338,13 @@ def upload_resume(request):
                 # Generate questions with timeout handling
                 question_generation_start = time.time()
                 try:
-                    # Set a timeout for question generation
-                    max_time = 25  # 25 seconds timeout
-                    
+                    # Generate interview questions using Ollama with better timeout handling
                     interview_questions = upload_resume.analyzer.generate_interview_questions(resume_text, num_questions=10)
                     
                     # Check if generation took too long
                     question_generation_time = time.time() - question_generation_start
-                    if question_generation_time > max_time:
-                        performance_logger.warning(f"Question generation exceeded timeout: {question_generation_time:.2f}s > {max_time}s")
+                    if question_generation_time > 25:  # Reduced from 30 to 25 seconds
+                        performance_logger.warning(f"Question generation time: {question_generation_time:.2f}s > 25s")
                     else:
                         performance_logger.info(f"Question generation completed in {question_generation_time:.2f}s")
                     
@@ -392,4 +417,5 @@ def upload_resume(request):
     else:
         logger.info("GET request received, rendering upload form")
         
-    return render(request, "upload.html", {"form": ResumeUploadForm()})
+    return render(request, "upload.html", {"form": ResumeUploadForm()})from django import forms
+from django.core.validators import FileExtensionValidator

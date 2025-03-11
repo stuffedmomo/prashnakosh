@@ -9,10 +9,10 @@ from .settings import *  # Import base settings
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Allowed hosts - Add your domain
-ALLOWED_HOSTS = ['prashnakosh.in', 'www.prashnakosh.in']
+ALLOWED_HOSTS = ['prashnakosh.in', 'www.prashnakosh.in', '15.207.165.91', 'localhost', '127.0.0.1']
 
 # Security settings
 SECURE_SSL_REDIRECT = True
@@ -59,10 +59,10 @@ DEFAULT_FROM_EMAIL = 'Prashnakosh <no-reply@prashnakosh.in>'
 SERVER_EMAIL = 'errors@prashnakosh.in'
 
 # Logging adjustments for production
-LOGGING['handlers']['file']['filename'] = '/var/log/prashnakosh/app.log'
-LOGGING['handlers']['error_file']['filename'] = '/var/log/prashnakosh/error.log'
-LOGGING['handlers']['security_file']['filename'] = '/var/log/prashnakosh/security.log'
-LOGGING['handlers']['performance_file']['filename'] = '/var/log/prashnakosh/performance.log'
+LOGGING['handlers']['file']['filename'] = os.path.join(BASE_DIR, 'logs/app.log')
+LOGGING['handlers']['error_file']['filename'] = os.path.join(BASE_DIR, 'logs/error.log')
+LOGGING['handlers']['security_file']['filename'] = os.path.join(BASE_DIR, 'logs/security.log')
+LOGGING['handlers']['performance_file']['filename'] = os.path.join(BASE_DIR, 'logs/performance.log')
 
 # Google Analytics settings
 GOOGLE_ANALYTICS_ID = os.environ.get('GOOGLE_ANALYTICS_ID', '')

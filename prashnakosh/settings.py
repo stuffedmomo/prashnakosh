@@ -33,7 +33,7 @@ SECRET_KEY = 'django-insecure-v@)^!6w*6sazu3yjxuwzc$(+xsv@dqp75t4+4x_!prm*c@afc2
 # This will be overridden in production settings
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['prashnakosh.in', 'www.prashnakosh.in', '15.207.165.91', 'localhost', '127.0.0.1']
 
 
 # Application definition

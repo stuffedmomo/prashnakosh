@@ -12,7 +12,7 @@ SECRET_KEY = 'django-insecure-v@)^!6w*6sazu3yjxuwzc$(+xsv@dqp75t4+4x_!prm*c@afc2
 DEBUG = True
 
 # Local hosts
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['prashnakosh.in', 'www.prashnakosh.in', '15.207.165.91', 'localhost', '127.0.0.1']
 
 # Database - Use Supabase for development
 DATABASES = {
